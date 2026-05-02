@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ONGC — Sanction Note Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ===== YOUR EXACT SAME CSS ===== */
+  :root {
+    --ongc-red: #C0392B;
+    --ongc-red-light: #FDECEA;
+    --ongc-red-mid: #E8B4B0;
+    --ongc-green: #1A6B3C;
+    --ongc-green-light: #E8F5EE;
+    --ongc-gold: #D4A017;
+    --ongc-gold-light: #FBF3DC;
+    --ongc-navy: #1B2A4A;
+    --ongc-navy-light: #E8EDF5;
+    --bg-page: #F5F3EE;
+    --bg-card: #FFFFFF;
+    --bg-subtle: #FAF9F6;
+    --border: #E2DDD5;
+    --border-strong: #C8C2B8;
+    --text-primary: #1C1917;
+    --text-secondary: #6B6560;
+    --text-muted: #A09890;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: auto;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 10% 0%, rgba(192,57,43,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 100%, rgba(26,107,60,0.05) 0%, transparent 60%),
+      url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C0392B' fill-opacity='0.022'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .bg-deco {
+    position: fixed;
+    bottom: 0;
+    right: -60px;
+    width: 420px;
+    height: 420px;
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page-wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.25rem 4rem;
+  }
+
+  .site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 0;
+    margin-bottom: .5rem;
+    border-bottom: 1px solid var(--border);
+    animation: fadeDown .5s ease both;
+  }
+
+  .logo-group { display: flex; align-items: center; gap: 14px; }
+  .logo-circle {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: var(--ongc-red);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(192,57,43,0.30);
+  }
+  .logo-circle span {
+    font-family: 'DM Serif Display', serif;
+    font-size: 15px; color: #fff; letter-spacing: .04em;
+  }
+  .logo-text h2 { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--text-primary); letter-spacing: .01em; }
+  .logo-text p  { font-size: 11px; color: var(--text-muted); letter-spacing: .06em; text-transform: uppercase; margin-top: 1px; }
+  .header-tag {
+    font-size: 11px; font-weight: 500; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--ongc-red); background: var(--ongc-red-light);
+    border: 1px solid var(--ongc-red-mid); padding: 5px 12px; border-radius: 20px;
+  }
+
+  .hero { padding: 2.5rem 0 2rem; animation: fadeDown .5s .1s ease both; }
+  .hero h1 { font-family: 'DM Serif Display', serif; font-size: 36px; line-height: 1.18; color: var(--text-primary); margin-bottom: .75rem; }
+
+  .step-tracker {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 2rem;
+    animation: fadeDown .5s .2s ease both;
+    flex-wrap: wrap;
+  }
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    flex: 1;
+    position: relative;
+  }
+  .step-item::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+    margin: 0 10px;
+  }
+  .step-item:last-child::after {
+    display: none;
+  }
+  .step-num {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--bg-page);
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    flex-shrink: 0;
+    transition: all .2s;
+  }
+  .step-item.active .step-num { background: var(--ongc-red); border-color: var(--ongc-red); color: #fff; box-shadow: 0 2px 8px rgba(192,57,43,.30); }
+  .step-item.done   .step-num { background: var(--ongc-green); border-color: var(--ongc-green); color: #fff; }
+  .step-item.active { color: var(--text-primary); }
+  .step-item.done   { color: var(--ongc-green); }
+
+  .form-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 1.75rem 2rem;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    animation: fadeUp .4s ease both;
+    overflow-x: auto;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-icon { width: 36px; height: 36px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px; }
+  .card-icon.red   { background: var(--ongc-red-light); }
+  .card-icon.green { background: var(--ongc-green-light); }
+  .card-icon.gold  { background: var(--ongc-gold-light); }
+  .card-icon.navy  { background: var(--ongc-navy-light); }
+  .card-title    { font-family: 'DM Serif Display', serif; font-size: 17px; color: var(--text-primary); }
+  .card-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  .field { margin-bottom: 1.1rem; }
+  .field:last-child { margin-bottom: 0; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+  .req { color: var(--ongc-red); margin-left: 2px; }
+  .opt { font-size: 10px; font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text-muted); margin-left: 4px; }
+
+  input, select, textarea {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text-primary);
+    background: var(--bg-subtle);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s, background .15s;
+  }
+  input:hover, select:hover, textarea:hover { border-color: var(--border-strong); background: #fff; }
+  input:focus, select:focus, textarea:focus { border-color: var(--ongc-red); background: #fff; box-shadow: 0 0 0 3px rgba(192,57,43,.10); }
+  textarea { resize: vertical; min-height: 100px; line-height: 1.65; }
+  .field-hint { font-size: 11px; color: var(--text-muted); margin-top: 5px; line-height: 1.5; }
+
+  /* Dynamic table styles */
+  .items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+  }
+  .items-table th, .items-table td {
+    border: 1px solid var(--border);
+    padding: 12px 8px;
+    vertical-align: top;
+    background: white;
+  }
+  .items-table th {
+    background: var(--bg-subtle);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+  .inline-radio-group {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .inline-radio-group label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: normal;
+    text-transform: none;
+    font-size: 13px;
+  }
+  .cond-fields {
+    margin-top: 8px;
+    padding: 8px;
+    background: var(--bg-subtle);
+    border-radius: var(--radius-md);
+  }
+  .cond-fields .subfield {
+    margin-bottom: 8px;
+  }
+  .cond-fields .subfield:last-child {
+    margin-bottom: 0;
+  }
+  .cond-fields input {
+    background: white;
+  }
+  .remove-row-btn {
+    background: var(--ongc-red-light);
+    border: 1px solid var(--ongc-red-mid);
+    color: var(--ongc-red);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .remove-row-btn:hover {
+    background: var(--ongc-red);
+    color: white;
+  }
+  .add-btn {
+    background: var(--ongc-green);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .add-btn:hover {
+    opacity: 0.9;
+  }
+
+  /* Enhanced Generate Button */
+  .gen-btn {
+    width: 100%;
+    padding: 18px 28px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    background: var(--ongc-red);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-xl);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    transition: all 0.25s ease;
+    box-shadow: 0 8px 20px rgba(192,57,43,0.4), 0 2px 4px rgba(0,0,0,0.1);
+    letter-spacing: 0.5px;
+  }
+  .gen-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px rgba(192,57,43,0.5), 0 4px 8px rgba(0,0,0,0.1);
+    background: #a93226;
+  }
+  .gen-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 5px 12px rgba(192,57,43,0.4);
+  }
+  .gen-btn:disabled {
+    opacity: 0.6;
+    transform: none;
+    cursor: not-allowed;
+    box-shadow: 0 4px 12px rgba(192,57,43,0.3);
+  }
+  .gen-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .error-bar {
+    display: none;
+    padding: 12px 16px;
+    background: var(--ongc-red-light);
+    border: 1.5px solid var(--ongc-red-mid);
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    color: var(--ongc-red);
+    margin-top: 1rem;
+  }
+  .error-bar.visible { display: block; }
+  .output-section { display: none; margin-top: 1.5rem; }
+  .output-section.visible { display: block; }
+  .output-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+  }
+  .output-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background: var(--ongc-navy);
+    color: white;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .output-topbar button {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 30px;
+    margin-left: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+  }
+  .output-topbar button:hover {
+    background: rgba(255,255,255,0.3);
+  }
+  .output-body {
+    padding: 2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.95;
+    white-space: pre-wrap;
+    max-height: 600px;
+    overflow-y: auto;
+    background: #FAFAF8;
+  }
+  .spin {
+    width: 20px;
+    height: 20px;
+    border: 2.5px solid rgba(255,255,255,.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    display: none;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (max-width: 800px) {
+    .items-table, .items-table tbody, .items-table tr, .items-table td { display: block; width: 100%; }
+    .items-table th { display: none; }
+    .items-table td { margin-bottom: 1rem; border: none; padding: 8px; }
+    .step-tracker { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .step-item::after { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+  <header class="site-header">
+    <div class="logo-group">
+      <div class="logo-circle"><span>ONGC</span></div>
+      <div class="logo-text">
+        <h2>Oil & Natural Gas Corporation</h2>
+        <p>Procurement & Materials Management</p>
+      </div>
+    </div>
+    <div class="header-tag">Multi‑Item · Groq AI</div>
+  </header>
+  <div class="hero"><h1>Sanction Note Generator</h1></div>
+
+  <div class="step-tracker">
+    <div class="step-item active" id="step1"><div class="step-num">1</div><span>Items</span></div>
+    <div class="step-item" id="step2"><div class="step-num">2</div><span>Details</span></div>
+    <div class="step-item" id="step3"><div class="step-num">3</div><span>PR & Release Strategy</span></div>
+    <div class="step-item" id="step4"><div class="step-num">4</div><span>Generate</span></div>
+  </div>
+
+  <!-- SECTION 1: Items Table -->
+  <div class="form-card">
+    <div class="card-header"><div class="card-icon gold">📋</div><div><div class="card-title">Procurement Items</div><div class="card-subtitle">Add one or more items – first row is mandatory</div></div></div>
+    <table class="items-table" id="itemsTable">
+      <thead>
+        <tr><th>Item Code (MATCODE) <span class="req">*</span></th><th>Material Type <span class="req">*</span></th><th>LPR Status & Details</th><th>GeM Status & Details</th><th>Action</th></tr>
+      </thead>
+      <tbody id="itemsBody"></tbody>
+    </table>
+    <button type="button" class="add-btn" id="addItemBtn">+ Add Item</button>
+  </div>
+
+  <!-- SECTION 2: Subject & Justification -->
+  <div class="form-card">
+    <div class="card-header"><div class="card-icon navy">📄</div><div><div class="card-title">Details</div><div class="card-subtitle">Subject and justification for the sanction note</div></div></div>
+    <div class="field"><label>Subject <span class="req">*</span></label><input type="text" id="subject" placeholder="e.g. Procurement of UPS Battery for Server Room — Infocom Department"></div>
+    <div class="field"><label>Justification <span class="req">*</span></label><textarea id="justification" rows="4" placeholder="Describe why this procurement is needed — equipment failure, aging infrastructure, operational requirement, OEM support lapse, etc."></textarea><div class="field-hint">The AI will expand this into formal multi-paragraph justification</div></div>
+  </div>
+
+  <!-- SECTION 3: PR & Release Strategy -->
+  <div class="form-card">
+    <div class="card-header"><div class="card-icon navy">🗂️</div><div><div class="card-title">PR & Release Strategy</div><div class="card-subtitle">Purchase Requisition and approval levels (if available)</div></div></div>
+    <div class="grid2">
+      <div class="field"><label>PR Number <span class="opt">(optional)</span></label><input type="text" id="pr-number" placeholder="e.g. 1030115922"><div class="field-hint">Purchase Requisition raised in SAP/ERP</div></div>
+      <div class="field"><label>Release Strategy <span class="opt">(optional)</span></label><input type="text" id="release-strategy" placeholder="e.g. MRP, C2, L2"><div class="field-hint">Approval levels completed in SAP</div></div>
+    </div>
+  </div>
+
+  <!-- Generate Button -->
+  <div class="gen-section">
+    <button class="gen-btn" id="gen-btn">
+      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 2L11 7H16L12 10.5L13.5 16L9 13L4.5 16L6 10.5L2 7H7L9 2Z"/></svg>
+      <span class="spin" id="btn-spin"></span>
+      <span id="btn-label">Generate Sanction Note</span>
+    </button>
+    <div class="error-bar" id="error-bar"></div>
+  </div>
+
+  <!-- Output Section -->
+  <div class="output-section" id="output-section">
+    <div class="output-card">
+      <div class="output-topbar">
+        <span>Generated Sanction Note</span>
+        <div>
+          <button onclick="copyNote()">Copy</button>
+          <button onclick="printNote()">Print / PDF</button>
+          <button onclick="downloadNote()">Download as Word</button>
+        </div>
+      </div>
+      <div class="output-body" id="output-body"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Row management with file upload for GeM
+  let rowCounter = 0;
+  function createItemRow(isFirst = false) {
+    const rowId = `row_${rowCounter++}`;
+    const tr = document.createElement('tr');
+    tr.setAttribute('data-row-id', rowId);
+    // 1. Item Code
+    const tdCode = document.createElement('td');
+    const codeInput = document.createElement('input');
+    codeInput.type = 'text';
+    codeInput.placeholder = 'e.g. MAT-10045892';
+    codeInput.classList.add('item-code');
+    tdCode.appendChild(codeInput);
+    // 2. Material Type
+    const tdMat = document.createElement('td');
+    const matSelect = document.createElement('select');
+    matSelect.innerHTML = `<option value="">— Select —</option><option value="Capital">Capital</option><option value="Stores">Stores</option><option value="Spares">Spares</option>`;
+    matSelect.classList.add('mat-type');
+    tdMat.appendChild(matSelect);
+    // 3. LPR cell
+    const tdLpr = document.createElement('td');
+    const lprGroup = document.createElement('div');
+    lprGroup.className = 'inline-radio-group';
+    const lprAvailLabel = document.createElement('label');
+    lprAvailLabel.innerHTML = '<input type="radio" name="lpr_'+rowId+'" value="available"> Available';
+    const lprNotLabel = document.createElement('label');
+    lprNotLabel.innerHTML = '<input type="radio" name="lpr_'+rowId+'" value="not_available"> Not Available';
+    lprGroup.appendChild(lprAvailLabel);
+    lprGroup.appendChild(lprNotLabel);
+    const lprCondDiv = document.createElement('div');
+    lprCondDiv.className = 'cond-fields';
+    lprCondDiv.style.display = 'none';
+    lprCondDiv.innerHTML = `
+      <div class="subfield"><label>PO Number <span class="req">*</span></label><input type="text" class="lpr-po" placeholder="e.g. PO/2022/INF/4521"></div>
+      <div class="subfield"><label>PO Date <span class="req">*</span></label><input type="date" class="lpr-date"></div>
+      <div class="subfield"><label>Unit Price (₹) <span class="req">*</span></label><input type="number" class="lpr-amount" placeholder="45000"></div>
+    `;
+    tdLpr.appendChild(lprGroup);
+    tdLpr.appendChild(lprCondDiv);
+    // 4. GeM cell with file upload (label changed)
+    const tdGem = document.createElement('td');
+    const gemGroup = document.createElement('div');
+    gemGroup.className = 'inline-radio-group';
+    const gemYesLabel = document.createElement('label');
+    gemYesLabel.innerHTML = '<input type="radio" name="gem_'+rowId+'" value="yes"> Yes';
+    const gemNoLabel = document.createElement('label');
+    gemNoLabel.innerHTML = '<input type="radio" name="gem_'+rowId+'" value="no"> No';
+    gemGroup.appendChild(gemYesLabel);
+    gemGroup.appendChild(gemNoLabel);
+    const gemCondDiv = document.createElement('div');
+    gemCondDiv.className = 'cond-fields';
+    gemCondDiv.style.display = 'none';
+    gemCondDiv.innerHTML = `
+      <div class="subfield"><label>GeM L1 Rate (₹) <span class="req">*</span></label><input type="number" class="gem-l1" placeholder="Lowest price on GeM"></div>
+      <div class="subfield"><label>Our Unit Price (₹) <span class="req">*</span></label><input type="number" class="gem-unit" placeholder="Quoted unit price"></div>
+      <div class="subfield"><label>Upload File</label><input type="file" class="gem-pdf" accept=".pdf"></div>
+    `;
+    tdGem.appendChild(gemGroup);
+    tdGem.appendChild(gemCondDiv);
+    // 5. Action
+    const tdAction = document.createElement('td');
+    if (!isFirst) {
+      const removeBtn = document.createElement('button');
+      removeBtn.textContent = 'Remove';
+      removeBtn.className = 'remove-row-btn';
+      removeBtn.onclick = () => tr.remove();
+      tdAction.appendChild(removeBtn);
+    }
+    // LPR event
+    lprGroup.querySelectorAll('input').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        lprCondDiv.style.display = e.target.value === 'available' ? 'block' : 'none';
+      });
+    });
+    // GeM event
+    gemGroup.querySelectorAll('input').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        gemCondDiv.style.display = e.target.value === 'yes' ? 'block' : 'none';
+      });
+    });
+    tr.appendChild(tdCode);
+    tr.appendChild(tdMat);
+    tr.appendChild(tdLpr);
+    tr.appendChild(tdGem);
+    tr.appendChild(tdAction);
+    return tr;
+  }
+
+  const tbody = document.getElementById('itemsBody');
+  tbody.appendChild(createItemRow(true));
+  document.getElementById('addItemBtn').addEventListener('click', () => {
+    tbody.appendChild(createItemRow(false));
+  });
+
+  // Collect items data including files
+  function collectItemsData() {
+    const rows = document.querySelectorAll('#itemsBody tr');
+    const items = [];
+    for (let row of rows) {
+      const itemCode = row.querySelector('.item-code')?.value.trim();
+      const matType = row.querySelector('.mat-type')?.value;
+      if (!itemCode || !matType) continue;
+      const lprRadio = row.querySelector('input[name*="lpr_"]:checked');
+      const lprStatus = lprRadio ? lprRadio.value : null;
+      let lprPo = '', lprDate = '', lprAmount = '';
+      if (lprStatus === 'available') {
+        lprPo = row.querySelector('.lpr-po')?.value.trim() || '';
+        lprDate = row.querySelector('.lpr-date')?.value || '';
+        lprAmount = row.querySelector('.lpr-amount')?.value || '';
+      }
+      const gemRadio = row.querySelector('input[name*="gem_"]:checked');
+      const gemStatus = gemRadio ? gemRadio.value : null;
+      let gemL1 = '', gemUnit = '';
+      let gemFile = null;
+      if (gemStatus === 'yes') {
+        gemL1 = row.querySelector('.gem-l1')?.value || '';
+        gemUnit = row.querySelector('.gem-unit')?.value || '';
+        gemFile = row.querySelector('.gem-pdf')?.files[0] || null;
+      }
+      items.push({ itemCode, matType, lprStatus, lprPo, lprDate, lprAmount, gemStatus, gemL1, gemUnit, gemFile });
+    }
+    return items;
+  }
+
+  function validateItems(items) {
+    if (items.length === 0) return 'At least one item is required.';
+    for (let i = 0; i < items.length; i++) {
+      const it = items[i];
+      if (!it.itemCode) return `Item ${i+1}: Item Code is required.`;
+      if (!it.matType) return `Item ${i+1}: Material Type is required.`;
+      if (!it.lprStatus) return `Item ${i+1}: Please select LPR availability.`;
+      if (it.lprStatus === 'available') {
+        if (!it.lprPo) return `Item ${i+1}: PO Number is required (LPR available).`;
+        if (!it.lprDate) return `Item ${i+1}: PO Date is required (LPR available).`;
+        if (!it.lprAmount) return `Item ${i+1}: Unit Price is required (LPR available).`;
+      }
+      if (!it.gemStatus) return `Item ${i+1}: Please select GeM availability.`;
+      if (it.gemStatus === 'yes') {
+        if (!it.gemL1) return `Item ${i+1}: GeM L1 Rate is required.`;
+        if (!it.gemUnit) return `Item ${i+1}: Our Unit Price is required.`;
+      }
+    }
+    return null;
+  }
+
+  async function generateNote() {
+    const errBar = document.getElementById('error-bar');
+    errBar.className = 'error-bar';
+    const subject = document.getElementById('subject').value.trim();
+    const justification = document.getElementById('justification').value.trim();
+    const prNumber = document.getElementById('pr-number').value.trim();
+    const releaseStrategy = document.getElementById('release-strategy').value.trim();
+    if (!subject || !justification) { showErr('Subject and Justification are required.'); return; }
+    const items = collectItemsData();
+    const validationError = validateItems(items);
+    if (validationError) { showErr(validationError); return; }
+
+    const btn = document.getElementById('gen-btn');
+    const labelSpan = document.getElementById('btn-label');
+    const spin = document.getElementById('btn-spin');
+    btn.disabled = true;
+    labelSpan.textContent = 'Generating…';
+    spin.style.display = 'inline-block';
+    document.getElementById('output-section').classList.remove('visible');
+
+    // Build FormData
+    const formData = new FormData();
+    formData.append('subject', subject);
+    formData.append('justification', justification);
+    formData.append('prNumber', prNumber);
+    formData.append('releaseStrategy', releaseStrategy);
+    // Prepare items without the file objects for JSON
+    const itemsForJson = items.map(it => ({
+      itemCode: it.itemCode,
+      matType: it.matType,
+      lprStatus: it.lprStatus,
+      lprPo: it.lprPo,
+      lprDate: it.lprDate,
+      lprAmount: it.lprAmount,
+      gemStatus: it.gemStatus,
+      gemL1: it.gemL1,
+      gemUnit: it.gemUnit
+    }));
+    formData.append('items', JSON.stringify(itemsForJson));
+    // Append PDF files with index keys
+    for (let idx = 0; idx < items.length; idx++) {
+      if (items[idx].gemFile) {
+        formData.append(`gem_pdf_${idx}`, items[idx].gemFile);
+      }
+    }
+
+    try {
+      const response = await fetch('/generate', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await response.json();
+      if (data.success) {
+        document.getElementById('output-body').textContent = data.note;
+        document.getElementById('output-section').classList.add('visible');
+        document.getElementById('output-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.getElementById('step1').classList.add('done');
+        document.getElementById('step2').classList.add('done');
+        document.getElementById('step3').classList.add('done');
+        document.getElementById('step4').classList.add('active');
+      } else {
+        throw new Error(data.error || 'Generation failed');
+      }
+    } catch (err) {
+      showErr(err.message);
+    } finally {
+      btn.disabled = false;
+      labelSpan.textContent = 'Generate Sanction Note';
+      spin.style.display = 'none';
+    }
+    function showErr(m) { errBar.innerHTML = `⚠ ${m}`; errBar.classList.add('visible'); errBar.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  }
+
+  document.getElementById('gen-btn').onclick = generateNote;
+
+  function copyNote() {
+    const t = document.getElementById('output-body').textContent;
+    if (t) navigator.clipboard.writeText(t).then(() => alert('Copied!'));
+  }
+
+  function printNote() {
+    const t = document.getElementById('output-body').textContent;
+    if (t) {
+      const w = window.open('', '_blank');
+      w.document.write(`<html><head><title>Sanction Note</title><style>body{font-family:monospace;font-size:13px;line-height:1.9;padding:2cm;white-space:pre-wrap;}</style></head><body>${t.replace(/</g,'&lt;')}</body></html>`);
+      w.document.close();
+      w.print();
+    }
+  }
+
+  async function downloadNote() {
+    const noteText = document.getElementById('output-body').textContent;
+    if (!noteText) {
+      alert('No note to download. Generate a note first.');
+      return;
+    }
+    try {
+      const response = await fetch('/download');
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'sanction_note.doc';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      } else {
+        throw new Error('Download failed');
+      }
+    } catch (err) {
+      alert('Download error: ' + err.message);
+    }
+  }
+</script>
+</body>
+</html>

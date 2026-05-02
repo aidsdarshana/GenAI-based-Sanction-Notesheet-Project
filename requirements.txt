@@ -1,0 +1,6 @@
+flask
+flask-cors
+pymysql
+python-dotenv
+groq
+pdfplumber
